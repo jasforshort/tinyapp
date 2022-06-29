@@ -16,13 +16,6 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
-});
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -44,6 +37,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls", (req, res) => {
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
@@ -52,6 +52,11 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+});
+
+app.post("/urls/:shortURL/delete", (req,res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
