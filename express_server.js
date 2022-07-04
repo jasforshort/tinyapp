@@ -14,8 +14,8 @@ function generateRandomString() {
 };
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
 const users = { 
@@ -41,13 +41,6 @@ const addUser = (email, password) => {
   return id;
 };
 
-const checkRegistration = (email, password) => {
-  if (email && password) {
-    return true;
-  }
-  return false
-};
-
 const findUser = email => {
   return Object.values(users).find(user => user.email === email);
 };
@@ -68,6 +61,10 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.get("/urls2.json", (req, res) => {
+  res.json(users);
+});
+
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -75,20 +72,29 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase
+    urls: urlsForUser(req.cookies["user_id"])
   };
-  res.render("urls_index", templateVars);
+  if (templateVars.user) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(400).send("You need to login or register to access this page");
+  }
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]]};
-  res.render("urls_new", templateVars);
+  if (templateVars.user) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("urls_login", templateVars);
+  }
 });
 
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
+  const userID = req.cookies['user_id'];
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = { longURL, userID };
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -96,9 +102,16 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL].longURL
   };
-  res.render("urls_show", templateVars);
+  if (!templateVars.user) {
+    res.status(400).send("You need to register or login to access this page");
+  }
+  if (req.cookies["user_id"] === urlDatabase[templateVars.shortURL].userID) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(400).send("This TinyURL doesn't belong to you!");
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -114,7 +127,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -148,7 +161,7 @@ app.get("/register", (req,res) => {
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
-  if (!checkRegistration(email, password)) {
+  if (!email || !password) {
     res.status(400).send('Email and/or password is missing');
   } else if (findUser(email)) {
     res.status(400).send('This email has already been registered')
@@ -158,6 +171,16 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 });
+
+const urlsForUser = (id) => {
+  let filtered = {};
+  for (let urlID of Object.keys(urlDatabase)) {
+    if (urlDatabase[urlID].userID === id) {
+      filtered[urlID] = urlDatabase[urlID];
+    }
+  }
+  return filtered;
+};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
