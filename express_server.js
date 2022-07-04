@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
-
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -13,6 +14,9 @@ function generateRandomString() {
   return Math.random().toString(36).substring(6);
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DATABASES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
@@ -31,12 +35,17 @@ const users = {
   }
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const addUser = (email, password) => {
   const id = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10);
   users[id] = {
     id,
     email,
-    password
+    password: hashedPassword
   };
   return id;
 };
@@ -45,13 +54,19 @@ const findUser = email => {
   return Object.values(users).find(user => user.email === email);
 };
 
-const checkPassword= (user, password) => {
-  if (user.password === password) {
-    return true;
-  } else {
-    return false;
+const urlsForUser = (id) => {
+  let filtered = {};
+  for (let urlID of Object.keys(urlDatabase)) {
+    if (urlDatabase[urlID].userID === id) {
+      filtered[urlID] = urlDatabase[urlID];
+    }
   }
+  return filtered;
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ROUTES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -150,7 +165,7 @@ app.post("/login", (req, res) => {
   const user = findUser(email);
   if (!user) {
     res.status(403).send("Email cannot be found");
-  } else if (!checkPassword(user, password))  {
+  } else if (!bcrypt.compareSync(password, user.password))  {
     res.status(403).send("Wrong password");
   } else {
     res.cookie('user_id', user.id);
@@ -180,16 +195,6 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 });
-
-const urlsForUser = (id) => {
-  let filtered = {};
-  for (let urlID of Object.keys(urlDatabase)) {
-    if (urlDatabase[urlID].userID === id) {
-      filtered[urlID] = urlDatabase[urlID];
-    }
-  }
-  return filtered;
-};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
