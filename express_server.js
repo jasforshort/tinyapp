@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -17,6 +17,7 @@ function generateRandomString() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATABASES
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
