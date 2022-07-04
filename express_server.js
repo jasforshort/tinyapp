@@ -52,6 +52,14 @@ const findUser = email => {
   return Object.values(users).find(user => user.email === email);
 };
 
+const checkPassword= (user, password) => {
+  if (user.password === password) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -116,8 +124,16 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username, req.body.username');
-  res.redirect("/urls");
+  const { email, password } = req.body;
+  const user = findUser(email);
+  if (!user) {
+    res.status(403).send("Email cannot be found");
+  } else if (!checkPassword(user, password))  {
+    res.status(403).send("Wrong password");
+  } else {
+    res.cookie('user_id', user.id);
+    res.redirect("/urls");
+  }
 });
 
 app.post("/logout", (req, res) => {
