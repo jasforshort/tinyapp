@@ -115,20 +115,29 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  const shortURL = req.params.shortURL;
+  if (req.cookies["user_id"] === urlDatabase[shortURL].userID) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(400).send("You are not permitted to delete this URL.");
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  urlDatabase[shortURL].longURL = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  if (req.cookies["user_id"] === urlDatabase[shortURL].userID) {
+    urlDatabase[shortURL].longURL = longURL;
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(400).send("You are not permitted to delete this URL.")
+  }
 });
 
 app.get("/login", (req, res) => {
