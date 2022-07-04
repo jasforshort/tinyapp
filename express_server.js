@@ -48,7 +48,7 @@ const checkRegistration = (email, password) => {
   return false
 };
 
-const checkEmail = email => {
+const findUser = email => {
   return Object.values(users).find(user => user.email === email);
 };
 
@@ -110,13 +110,18 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("urls_login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('username, req.body.username');
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -129,7 +134,7 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!checkRegistration(email, password)) {
     res.status(400).send('Email and/or password is missing');
-  } else if (checkEmail(email)) {
+  } else if (findUser(email)) {
     res.status(400).send('This email has already been registered')
   } else {
     const user_id = addUser(email, password);
