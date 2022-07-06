@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-const getUserByEmail = require('./helpers');
+const { getUserByEmail } = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -27,15 +27,15 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
@@ -46,7 +46,7 @@ const users = {
 
 function generateRandomString() {
   return Math.random().toString(36).substring(6);
-};
+}
 
 const addUser = (email, password) => {
   const id = generateRandomString();
@@ -156,7 +156,7 @@ app.post("/urls/:shortURL", (req, res) => {
     urlDatabase[shortURL].longURL = longURL;
     res.redirect(`/urls/${shortURL}`);
   } else {
-    res.status(400).send("You are not permitted to delete this URL.")
+    res.status(400).send("You are not permitted to delete this URL.");
   }
 });
 
@@ -194,7 +194,7 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     res.status(400).send('Email and/or password is missing');
   } else if (getUserByEmail(email, users)) {
-    res.status(400).send('This email has already been registered')
+    res.status(400).send('This email has already been registered');
   } else {
     const user_id = addUser(email, password);
     req.session.user_id = user_id;
