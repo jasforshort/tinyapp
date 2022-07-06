@@ -13,6 +13,7 @@ app.use(
   cookieSession({
     name: 'session',
     keys: ['e1d50c4f-538a-4682-89f4-c002f10a59c8', '2d310699-67d3-4b26-a3a4-1dbf2b67be5c'],
+    maxAge: 24 * 60 * 60 * 1000
   })
 );
 
