@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const getUserByEmail = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -56,10 +57,6 @@ const addUser = (email, password) => {
     password: hashedPassword
   };
   return id;
-};
-
-const getUserByEmail = (email, database) => {
-  return Object.values(database).find(user => user.email === email);
 };
 
 const urlsForUser = (id) => {
