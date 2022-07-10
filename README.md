@@ -16,7 +16,7 @@ Register Page
 
 Login Page
 
-!["Screenshot of login page"](https://github.com/jasforshort/tinyapp/blob/main/docs/urls-page.png)
+!["Screenshot of login page"](https://github.com/jasforshort/tinyapp/blob/main/docs/login-page.png)
 
 
 ## Dependencies
